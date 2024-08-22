@@ -15,12 +15,20 @@
 
         .sidebar {
             width: 200px;
-            background-color: #212529;
+            background-color: #000;
             color: white;
             position: fixed;
             top: 0;
             bottom: 0;
             padding: 20px;
+        }
+
+        .sidebar img{
+            width: 100%;
+            height: auto;
+            border-radius: 20%;
+            margin-bottom: 20px;
+
         }
 
         .sidebar a {
@@ -120,7 +128,7 @@
         }
 
         .col-md-3 input{
-            width: 100%;
+            width: 230px;
             font-size: 15px;  
         }
     </style>
@@ -129,6 +137,7 @@
 <body>
 
     <div class="sidebar">
+        <img src="assets/img/logo.jfif" alt="">
         <a href="#" class="dashboardicon"> <i class="fa-solid fa-table-columns"></i> Dashboard</a>
         <a href="login.html" class="exit"><i class="fa-solid fa-arrow-right-from-bracket"></i> Salir</a>
     </div>
@@ -163,8 +172,10 @@
                 <div class="card card-warning mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Subir archivo</h5>
-                        <input type="file" class="form-control mb-2">
-                        <button class="btn-process ">PROCESAR</button>
+                        <div class="d-flex justify-content-between">
+                            <input type="file" class="form-control mb-2">
+                            <button class="btn-process ">PROCESAR</button>
+                        </div>
                     </div>
                 </div>
             </div>
