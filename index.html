@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #212529;
+            color: white;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            color: white;
+            display: block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .card {
+            border-radius: 0.5rem;
+        }
+
+        .card-primary {
+            background-color: #9370DB;
+            color: white;
+        }
+
+        .card-success {
+            background-color: #32CD32;
+            color: white;
+        }
+
+        .card-danger {
+            background-color: #FF6347;
+            color: white;
+        }
+
+        .card-warning {
+            background-color: #FFA500;
+            color: white;
+        }
+
+        .btn-process {
+            background-color: #28a745;
+            color: white;
+            border-radius: 0.25rem;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .table th,
+        .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .btn-pause {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 0.25rem;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            border: none;
+            margin-right: 5px;
+        }
+
+        .btn-download {
+            background-color: #28a745;
+            color: white;
+            border-radius: 0.25rem;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <a href="#">📞 Movil</a>
+        <a href="#">🍊 Orange</a>
+        <a href="#">☎️ ABC Tel.</a>
+        <a href="#">📒 Pag. Amarilla</a>
+        <a href="#">📡 Infobel</a>
+        <a href="#">🚪 Salir</a>
+    </div>
+
+    <div class="content">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card card-primary mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Procesados</h5>
+                        <p class="card-text">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Subido</h5>
+                        <p class="card-text">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-danger mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Procesado</h5>
+                        <p class="card-text">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-warning mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Subir archivo</h5>
+                        <input type="file" class="form-control mb-2">
+                        <button class="btn-process">PROCESAR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Consultas Moviles</h5>
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>NOMBRE BASE</th>
+                            <th>FECHA CARGA</th>
+                            <th>REGISTROS</th>
+                            <th>PROGRESO</th>
+                            <th>ESTADO</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>791</td>
+                            <td>prueba_moviles_07082024_wYF4bcu.xlsx</td>
+                            <td>2024-08-21T21:37:41.093879Z</td>
+                            <td>5852</td>
+                            <td>0</td>
+                            <td class="text-danger">EN PROGRESO</td>
+                            <td>
+                                <button class="btn-pause">PAUSAR</button>
+                                <button class="btn-download">DESCARGAR</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
