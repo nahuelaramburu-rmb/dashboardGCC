@@ -13,59 +13,82 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            background-color: #000;
         }
         .login-container {
-            background-color: #fff;
-            height: fit-content;
+            background-color: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 350px;
+            position: relative;
+        }
+        .login-title {
+            background-color: rgb(98, 104, 116);
+            color: white;
+            padding: 15px;
+            border-radius: 7px;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
             text-align: center;
+            font-size: 22px;
         }
-        .login-container h2 {
-            margin-bottom: 20px;
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 50px;
         }
-        .login-container input {
-            width: 75%;
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
             padding: 10px;
-            margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
-        }
-        .login-container a{
-            width: 30%;
-            padding: 10px;
-            margin-top: 15px;
-            background: linear-gradient(to right, #6a1bc4, #1e48bb);
-            border-radius: 4px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .login-container a:hover {
-            background-color: #0056b3;
+            font-size: 12px;
         }
 
-        .login-container img{
-            width: 130px;
-            height: 130px;
-            border-radius: 16%;
-            margin-bottom: 20px;
+        .login-form input[type="text"]::placeholder,
+        .login-form input[type="password"]::placeholder {
+            color: rgb(165, 165, 165);
+        }
+
+        .login-form a {
+            padding: 10px;
+            margin-top: 50px;
+            background-color: rgb(98, 104, 116);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .logo{
+            margin-left: 150px;
+        }
+
+        .logo img{
+            width: 400px;
+            height: auto;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <img src="assets/img/logo.jfif" alt="">
-        <form>
-            <!-- Agregar requiered a los campos -->
-            <input type="text" placeholder="Usuario" >
+        <div class="login-title">Iniciar sesión</div>
+        <form class="login-form">
+            <!-- Agregar requiered -->
+            <input type="text" placeholder="Usuario">
             <input type="password" placeholder="Contraseña">
-            <br>
-            <a href="index.html">Ingresar</a>
+            <a href="index.html">INICIAR SESIÓN</a>
         </form>
+    </div>
+    <div class="logo">
+        <img src="assets/img/logo.jfif" alt="">
     </div>
 </body>
 </html>
