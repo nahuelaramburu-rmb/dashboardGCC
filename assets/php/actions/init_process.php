@@ -18,7 +18,7 @@ if (isset($_SERVER['argv'][1])) {
         WHERE id_relacional = '$id'
         AND `operador` = 'SIN PROCESAR'
         AND `bloqueado` = '0'
-        LIMIT 50"
+        LIMIT 1"
     );
 
     while ($row = $proccessIniciated->fetch_assoc()) {

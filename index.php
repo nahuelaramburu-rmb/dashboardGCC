@@ -15,6 +15,14 @@ include 'assets/php/config/database.php';
 include 'assets/php/actions/get_registers.php';
 include 'assets/php/actions/get_statistics.php';
 
+session_start();
+
+$user = $_SESSION['user'];
+
+if (!isset($user)) {
+    header('Location: /login.php');
+}
+
 $db = conectarDB();
 
 $registers = getRegisters($db);
@@ -30,7 +38,7 @@ $statistics = getStatistics($db);
             <p>GCC Technology</p>
         </div>
         <a href="#" class="dashboardicon"> <i class="fa-solid fa-table-columns"></i>Filtro Moviles</a>
-        <a href="login.html" class="exit"><i class="fa-solid fa-arrow-right-from-bracket"></i> Salir</a>
+        <a href="login.php" class="exit"><i class="fa-solid fa-arrow-right-from-bracket"></i> Salir</a>
     </div>
 
     <div class="content">
@@ -86,7 +94,7 @@ $statistics = getStatistics($db);
         <div class="d-flex">
             <input type="text" class="form-control mb-2" id="search" placeholder="Buscar...">
 
-            <button class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="btn-search btn btn-primary" style="margin-left: 20px;"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
 
         <div class="d-flex">
@@ -220,13 +228,17 @@ $statistics = getStatistics($db);
                                     </p>
                                 </td>
 
+                                <td>
+
                                 <?php if ($buttonText) : ?>
-                                    <td>
+                                    
                                         <button onclick="changeStateRegister(<?= $register['id'] ?>, <?= $type ?>)" class="<?= $buttonClass ?>" type="button">
                                             <?= $buttonText ?>
                                         </button>
-                                    </td>
+
                                 <?php endif; ?>
+                                    <button class="btn-process"><a style="color: #fff; text-decoration: none;" href="assets/php/actions/download_excel.php?id=<?= $register['id'] ?>">DESCARGAR</a></button>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -242,6 +254,10 @@ $statistics = getStatistics($db);
         $('.btn-search').click(
             function() {
                 let value = $('#search').val();
+
+                if(!value.length) {
+                    return;
+                }
 
                 $.ajax({
                     type: 'GET',

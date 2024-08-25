@@ -54,7 +54,7 @@
             color: rgb(165, 165, 165);
         }
 
-        .login-form a {
+        .login-form button {
             padding: 10px;
             margin-top: 50px;
             background-color: rgb(98, 104, 116);
@@ -77,14 +77,21 @@
         }
     </style>
 </head>
+<?php 
+    session_start();
+
+    $_SESSION = array();
+    
+    session_destroy();
+?>
 <body>
     <div class="login-container">
         <div class="login-title">Iniciar sesión</div>
-        <form class="login-form">
+        <form class="login-form" action="assets/php/actions/login.php" method="POST">
             <!-- Agregar requiered -->
-            <input type="text" placeholder="Usuario">
-            <input type="password" placeholder="Contraseña">
-            <a href="index.html">INICIAR SESIÓN</a>
+            <input type="text" placeholder="Usuario" name="user">
+            <input type="password" placeholder="Contraseña" name="pass">
+            <button type="submit">INICIAR SESIÓN</button>
         </form>
     </div>
     <div class="logo">

@@ -11,11 +11,11 @@ $proccessIniciated = $db->query(
 );
 
 function restartTor() {
-    pclose(popen('net stop Tor > NUL 2>&1', 'r'));
-    sleep(2);
+    $stopProcess = popen('net stop Tor > NUL 2>&1', 'r');
+    pclose($stopProcess);
     
-    pclose(popen('net start Tor > NUL 2>&1', 'r'));
-    sleep(5);
+    $startProcess = popen('net start Tor > NUL 2>&1', 'r');
+    pclose($startProcess);
 }
 
 function isTorRunning($port = 9150) {
@@ -40,8 +40,6 @@ while (!$torRunning && $maxRetries > 0) {
 }
 
 if ($torRunning) {
-    echo "Tor está en ejecución y listo para usar.";
-
     $url = "https://numeracionyoperadores.cnmc.es/api/portabilidad/numero_busquedas?tipoBusqueda=movil";
 
     $ch = curl_init($url);
