@@ -10,22 +10,23 @@ $db = conectarDB();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excelFile'])) {
     $file = $_FILES['excelFile'];
-    $dateNow = date("Y-m-d");
-    $newRandomCode = '';
-
-    do {
-        $newRandomCode = generarCodigoAleatorio(10);
-        $result = $db->query("SELECT COUNT(*) FROM `registro_excel` WHERE `codigo` = '$newRandomCode'");
-        $codeInDb = $result->fetch_row()[0];
-    } while ($codeInDb > 0);
-
-    $db->query("INSERT INTO `registro_excel` (`codigo`, `estado`, `fecha`, `registros`) VALUES ('$newRandomCode', 'CARGADO', '$dateNow', '0')");
-
-    $idRegister = $db->insert_id;
-
-    $numbers = [];
 
     if ($file['error'] === UPLOAD_ERR_OK) {
+        $dateNow = date("Y-m-d");
+        $newRandomCode = '';
+    
+        do {
+            $newRandomCode = generarCodigoAleatorio(10);
+            $result = $db->query("SELECT COUNT(*) FROM `registro_excel` WHERE `codigo` = '$newRandomCode'");
+            $codeInDb = $result->fetch_row()[0];
+        } while ($codeInDb > 0);
+    
+        $db->query("INSERT INTO `registro_excel` (`nombre`, `codigo`, `estado`, `fecha`, `registros`) VALUES ('$file[name]', '$newRandomCode', 'CARGADO', '$dateNow', '0')");
+    
+        $idRegister = $db->insert_id;
+    
+        $numbers = [];
+
         $fileTmpPath = $file['tmp_name'];
         $fileName = $file['name'];
         $fileSize = $file['size'];

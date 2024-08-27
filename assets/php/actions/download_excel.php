@@ -9,7 +9,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 $db = conectarDB();
 $id = $_GET['id'];
 
-$data = $db->query("SELECT numero, operador FROM `rel_registro_numeros` WHERE `id_relacional` = '$id' ORDER BY `operador` ASC");
+$data = $db->query("SELECT numero, operador FROM `rel_registro_numeros` WHERE `id_relacional` = '$id' ORDER BY `id` ASC");
 
 $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
