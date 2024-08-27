@@ -1,16 +1,6 @@
 <?php
-require_once '../config/database.php';
-include '../funciones.php';
-
-// if (isset($_GET['id'])) {
-    // $id = $_GET['id'];
-
-if (isset($_SERVER['argv'][1])) {
-    $id = $_SERVER['argv'][1];
-
+function initProcess($id, $db, $CHGenerated){
     $data = [];
-
-    $db = conectarDB();
 
     $proccessIniciated = $db->query(
         "SELECT numero, id 
@@ -18,7 +8,7 @@ if (isset($_SERVER['argv'][1])) {
         WHERE id_relacional = '$id'
         AND `operador` = 'SIN PROCESAR'
         AND `bloqueado` = '0'
-        LIMIT 1"
+        LIMIT 50"
     );
 
     while ($row = $proccessIniciated->fetch_assoc()) {
@@ -26,33 +16,30 @@ if (isset($_SERVER['argv'][1])) {
         array_push($data, $row);
     }
 
-    for($i = 0; $i < count($data); $i++) {
+    for ($i = 0; $i < count($data); $i++) {
         $row = $data[$i];
 
-        $CHGenerated = generarCH();
         $numero = urlencode($row['numero']);
         $url = "https://numeracionyoperadores.cnmc.es/api/portabilidad/movil?numero=$numero&captchaLoad=$CHGenerated";
 
         echo $url;
         echo "<br>";
 
-        // Inicializar cURL
+        $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '0' WHERE `id` = '$row[id]'");
+
         $ch = curl_init($url);
 
-        // Configurar cURL para usar Tor como proxy
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_PROXY, "127.0.0.1:9150"); // Proxy Tor
-        curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5_HOSTNAME); // Tipo de proxy SOCKS5
+        // curl_setopt($ch, CURLOPT_PROXY, "149.50.141.80:8118");
+        // curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
 
         $response = curl_exec($ch);
 
         echo $response;
 
-        $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '0' WHERE `id` = '$row[id]'");
-
         if ($response === false) {
-            error_log('Error en cURL: ' . curl_error($ch));
+            echo 'Error en cURL: ' . curl_error($ch);
         } else {
             $responseArray = json_decode($response, true);
 
@@ -62,10 +49,23 @@ if (isset($_SERVER['argv'][1])) {
                 $updateQuery = "UPDATE `rel_registro_numeros` SET `operador` = '$operator' WHERE `id` = '$row[id]'";
 
                 if ($db->query($updateQuery) === false) {
-                    error_log('Error en la actualización SQL: ' . $db->error);
+                    echo 'Error en la actualización SQL: ' . $db->error;
                 }
             } else {
                 echo 'Error al decodificar el JSON o falta de datos en la respuesta';
+                if(isset($responseArray['numero'])){
+                    $notExist = false;
+
+                    for ($i = 0; $i < count($responseArray['numero']); $i++) {
+                        if ($responseArray['numero'][$i] === 'El número de teléfono debe constar de 9 dígitos' || $responseArray['numero'][$i] === 'Debe introducir un número de teléfono móvil válido') {
+                            $notExist = true;
+                        }
+                    }
+
+                    if ($notExist) {
+                        $db->query("UPDATE `rel_registro_numeros` SET `operador` = 'NO EXISTE' WHERE `id` = '$row[id]'");
+                    }
+                }
             }
         }
 

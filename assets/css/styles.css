@@ -198,13 +198,18 @@ body {
     border: 1px solid grey;
     border-radius: 5px;
 }
-.progress-bar::-webkit-progress-value {
+/* .progress-bar::-webkit-progress-value {
     background-color: orange;
 }
 .progress-bar::-moz-progress-bar {
     background-color: orange;
-}
+} */
 .progress-text {
     width: 40px;
     margin-left: 10px;
+}
+
+.procesados {
+    display: flex;
+    justify-content: center;
 }
