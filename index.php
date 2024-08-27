@@ -7,7 +7,7 @@
     <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css?v=<?php echo time(); ?>">
 </head>
 
 <?php
@@ -116,6 +116,7 @@ $statistics = getStatistics($db);
                         <tr>
                             <th>ID</th>
                             <th>Código</th>
+                            <th>Nombre Base</th>
                             <th>Fecha Carga</th>
                             <th># Registros</th>
                             <th># Procesados</th>
@@ -175,9 +176,12 @@ $statistics = getStatistics($db);
                             <tr>
                                 <td style="font-weight: bold;"><?= $register['id'] ?></td>
                                 <td><?= $register['codigo'] ?></td>
+                                <td><?= $register['nombre'] ?></td>
                                 <td><?= $register['fecha'] ?></td>
                                 <td><?= $register['registros'] ?></td>
-                                <td><?= $register['registros_procesados'] ?></td>
+                                <td class="procesados" id="<?= $register['id'] ?>">
+                                    <?= $register['registros_procesados'] ?>
+                                </td>
                                 <!-- <td>
                                     <div class="progress-container">
                                         <progress class="progress-bar" value="21" max="100"></progress>
@@ -230,13 +234,13 @@ $statistics = getStatistics($db);
 
                                 <td>
 
-                                <?php if ($buttonText) : ?>
-                                    
+                                    <?php if ($buttonText) : ?>
+
                                         <button onclick="changeStateRegister(<?= $register['id'] ?>, <?= $type ?>)" class="<?= $buttonClass ?>" type="button">
                                             <?= $buttonText ?>
                                         </button>
 
-                                <?php endif; ?>
+                                    <?php endif; ?>
                                     <button class="btn-process"><a style="color: #fff; text-decoration: none;" href="assets/php/actions/download_excel.php?id=<?= $register['id'] ?>">DESCARGAR</a></button>
                                 </td>
                             </tr>
@@ -251,11 +255,16 @@ $statistics = getStatistics($db);
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
+        procesarProcesados();
+        setInterval(function() {
+            procesarProcesados();
+        }, 5000);
+
         $('.btn-search').click(
             function() {
                 let value = $('#search').val();
 
-                if(!value.length) {
+                if (!value.length) {
                     return;
                 }
 
@@ -294,6 +303,53 @@ $statistics = getStatistics($db);
                 }
             })
         }
+
+        function procesarProcesados() {
+            $('.procesados').each(function() {
+                let procesadoId = $(this).attr('id');
+
+                $.get('assets/php/actions/get_procesados.php?id=' + procesadoId, function(data) {
+                    $('#' + procesadoId).html(data);
+
+                    $('.progress-bar').each(function(index) {
+                        const $this = $(this);
+                        const percentage = $this.val();
+                        const uniqueId = 'progressBar-' + index;
+                        $this.attr('id', uniqueId);
+                        updateProgressColor($this, percentage);
+                    });
+                });
+            });
+        }
+
+        function updateProgressColor($progressBar, percentage) {
+            const red = Math.round(255 - (percentage * 2.55));
+            const green = 255;
+            const blue = 0;
+
+            const color = `rgb(${red}, ${green}, ${blue})`;
+
+            $progressBar.css('background-color', '#EEE');
+            $progressBar.css('color', color);
+
+            const progressBarId = $progressBar.attr('id');
+            const styleElement = document.createElement('style');
+            styleElement.innerHTML = `
+                #${progressBarId}::-webkit-progress-value { background-color: ${color}; }
+                #${progressBarId}::-moz-progress-bar { background-color: ${color}; }
+            `;
+            document.head.appendChild(styleElement);
+        }
+
+        $(document).ready(function() {
+            $('.progress-bar').each(function(index) {
+                const $this = $(this);
+                const percentage = $this.val();
+                const uniqueId = 'progressBar-' + index;
+                $this.attr('id', uniqueId);
+                updateProgressColor($this, percentage);
+            });
+        });
     </script>
 </body>
 
