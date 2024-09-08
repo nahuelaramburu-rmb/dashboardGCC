@@ -1,7 +1,8 @@
 <?php
 require_once '../config/database.php';
 include '../funciones.php';
-include './init_process.php';
+// include './init_process.php';
+// include './new_init_process.php';
 
 $db = conectarDB();
 
@@ -20,8 +21,8 @@ if ($torRunning) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);  // Timeout para cURL
-    curl_setopt($ch, CURLOPT_PROXY, "149.50.141.80:8118"); // Usar Privoxy
-    curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_HTTP); // Privoxy usa HTTP Proxy
+    // curl_setopt($ch, CURLOPT_PROXY, "149.50.141.80:8118"); // Usar Privoxy
+    // curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_HTTP); // Privoxy usa HTTP Proxy
 
     echo $url;
 
@@ -46,8 +47,8 @@ if ($torRunning) {
 
                     // initProcess($id, $db);
 
-                    $command = "php ./run_process.php $id > /dev/null &";
-                    popen($command, 'r');
+                    // $command = "php ./run_process.php $id > /dev/null &";
+                    // popen($command, 'r');
 
                     $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '0' WHERE `id_relacional` = '$id'");
                 } else {

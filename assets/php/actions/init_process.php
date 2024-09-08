@@ -1,5 +1,9 @@
 <?php
-function initProcess($id, $db, $CHGenerated){
+// function initProcess($id, $db){
+    require_once '../config/database.php';
+
+    $db = conectarDB();
+    $id = $_GET['id'];
     $data = [];
 
     $proccessIniciated = $db->query(
@@ -8,7 +12,7 @@ function initProcess($id, $db, $CHGenerated){
         WHERE id_relacional = '$id'
         AND `operador` = 'SIN PROCESAR'
         AND `bloqueado` = '0'
-        LIMIT 50"
+        LIMIT 1"
     );
 
     while ($row = $proccessIniciated->fetch_assoc()) {
@@ -17,7 +21,22 @@ function initProcess($id, $db, $CHGenerated){
     }
 
     for ($i = 0; $i < count($data); $i++) {
+        $CHGenerated = '';
         $row = $data[$i];
+
+        // Nombre del script de Python
+        $script = 'web_interaction.py';
+
+        // Comando para ejecutar el script Python
+        $command = escapeshellcmd("python $script");
+
+        // Ejecutar el comando y capturar la salida
+        $output = shell_exec($command);
+
+        // Mostrar la salida o errores
+        echo "<pre>$output</pre>";
+
+        return;
 
         $numero = urlencode($row['numero']);
         $url = "https://numeracionyoperadores.cnmc.es/api/portabilidad/movil?numero=$numero&captchaLoad=$CHGenerated";
@@ -71,4 +90,4 @@ function initProcess($id, $db, $CHGenerated){
 
         curl_close($ch);
     }
-}
+// }
