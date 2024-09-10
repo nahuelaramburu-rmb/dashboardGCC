@@ -1,9 +1,15 @@
 <?php
-// function initProcess($id, $db){
-    require_once '../config/database.php';
+// $id = $argv[1]; // Obtén el ID pasado como argumento
+$id = $_GET['id'];
+// Incluye la conexión a la base de datos
+require_once '../config/database.php';
 
-    $db = conectarDB();
-    $id = $_GET['id'];
+$db = conectarDB();
+
+initProcess($id, $db);
+
+function initProcess($id, $db)
+{
     $data = [];
 
     $proccessIniciated = $db->query(
@@ -21,73 +27,54 @@
     }
 
     for ($i = 0; $i < count($data); $i++) {
-        $CHGenerated = '';
         $row = $data[$i];
 
         // Nombre del script de Python
         $script = 'web_interaction.py';
+        $numero = urlencode($row['numero']);
+
+        echo $numero;
 
         // Comando para ejecutar el script Python
-        $command = escapeshellcmd("python $script");
+        $command = escapeshellcmd("python $script $numero");
 
         // Ejecutar el comando y capturar la salida
         $output = shell_exec($command);
 
-        // Mostrar la salida o errores
-        echo "<pre>$output</pre>";
+        echo '<pre>' . $output . '</pre>';
 
-        return;
+        $operatorReceibed = '';
 
-        $numero = urlencode($row['numero']);
-        $url = "https://numeracionyoperadores.cnmc.es/api/portabilidad/movil?numero=$numero&captchaLoad=$CHGenerated";
+        $output = mb_convert_encoding($output, 'UTF-8', 'auto'); // Asegurarse de que la cadena esté en UTF-8
+        preg_match('/OPERATOR:\s*(.+)/u', $output, $matches);
 
-        echo $url;
-        echo "<br>";
-
-        $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '0' WHERE `id` = '$row[id]'");
-
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        // curl_setopt($ch, CURLOPT_PROXY, "149.50.141.80:8118");
-        // curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
-
-        $response = curl_exec($ch);
-
-        echo $response;
-
-        if ($response === false) {
-            echo 'Error en cURL: ' . curl_error($ch);
-        } else {
-            $responseArray = json_decode($response, true);
-
-            if (json_last_error() === JSON_ERROR_NONE && isset($responseArray['operador']['nombre'])) {
-                $operator = $db->real_escape_string($responseArray['operador']['nombre']);
-
-                $updateQuery = "UPDATE `rel_registro_numeros` SET `operador` = '$operator' WHERE `id` = '$row[id]'";
-
-                if ($db->query($updateQuery) === false) {
-                    echo 'Error en la actualización SQL: ' . $db->error;
-                }
-            } else {
-                echo 'Error al decodificar el JSON o falta de datos en la respuesta';
-                if(isset($responseArray['numero'])){
-                    $notExist = false;
-
-                    for ($i = 0; $i < count($responseArray['numero']); $i++) {
-                        if ($responseArray['numero'][$i] === 'El número de teléfono debe constar de 9 dígitos' || $responseArray['numero'][$i] === 'Debe introducir un número de teléfono móvil válido') {
-                            $notExist = true;
-                        }
-                    }
-
-                    if ($notExist) {
-                        $db->query("UPDATE `rel_registro_numeros` SET `operador` = 'NO EXISTE' WHERE `id` = '$row[id]'");
-                    }
-                }
-            }
+        if (!empty($matches)) {
+            $operator = trim($matches[1]);
+            $operatorReceibed = $operator;
         }
 
-        curl_close($ch);
+        if ($operatorReceibed !== '') {
+
+            if($operatorReceibed === 'TELEF?NICA M?VILES ESPA?A, S.A. UNIPERSONAL'){
+                $operatorReceibed = 'TELEFÓNICA MÓVILES ESPAÑA, S.A. UNIPERSONAL';
+            }
+
+            if($operatorReceibed === 'VODAFONE ESPA?A, S.A. UNIPERSONAL'){
+                $operatorReceibed = 'VODAFONE ESPAÑA, S.A. UNIPERSONAL';
+            }
+
+            if($operatorReceibed === 'XFERA M?VILES, S.A. UNIPERSONAL'){
+                $operatorReceibed = 'XFERA MÓVILES, S.A. UNIPERSONAL';
+            }
+
+            echo $operatorReceibed;
+
+            $updateQuery = "UPDATE `rel_registro_numeros` SET `operador` = '$operatorReceibed', `bloqueado` = '0' WHERE `id` = '$row[id]'";
+
+            if ($db->query($updateQuery) === false) {
+                echo 'Error en la actualización SQL: ' . $db->error;
+            }
+        }
+        return;
     }
-// }
+}
