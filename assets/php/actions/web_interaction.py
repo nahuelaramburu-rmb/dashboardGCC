@@ -14,13 +14,18 @@ import os
 from pydub import AudioSegment
 import speech_recognition as sr
 from selenium.webdriver.common.keys import Keys
+import shutil
 
 numero_a_consultar = sys.argv[1]
 
+# Genera un nombre de carpeta único basado en numero_a_consultar
+audio_folder = os.path.join(os.getcwd(), f"audio_{numero_a_consultar}")
+os.makedirs(audio_folder, exist_ok=True)
+
 chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
+# chrome_options.add_argument('--headless')
+# chrome_options.add_argument('--no-sandbox')
+# chrome_options.add_argument('--disable-dev-shm-usage')
 
 driver = webdriver.Chrome(options=chrome_options)
 
@@ -111,8 +116,8 @@ try:
             ).get_attribute("src")
             print(f"[INFO] Audio src: {src}")
 
-            path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), "sample.mp3"))
-            path_to_wav = os.path.normpath(os.path.join(os.getcwd(), "sample.wav"))
+            path_to_mp3 = os.path.normpath(os.path.join(audio_folder, "sample.mp3"))
+            path_to_wav = os.path.normpath(os.path.join(audio_folder, "sample.wav"))
 
             # Descarga el archivo de audio mp3
             urllib.request.urlretrieve(src, path_to_mp3)
@@ -144,6 +149,11 @@ try:
 
         except Exception as e:
             print("[WARN] Audio challenge was not accessible or failed. Continuing with normal flow.")
+
+        finally:
+            # Elimina el directorio y su contenido
+            shutil.rmtree(audio_folder)
+            print(f"[INFO] Directory {audio_folder} has been removed.")
 
     # Vuelve a la página inicial
     driver.switch_to.default_content()

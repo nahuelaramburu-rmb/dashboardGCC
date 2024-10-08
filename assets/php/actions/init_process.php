@@ -1,17 +1,18 @@
 <?php
-// $id = $argv[1]; // Obtén el ID pasado como argumento
-$id = $_GET['id'];
-// Incluye la conexión a la base de datos
+include '../funciones.php';
 require_once '../config/database.php';
 
 $db = conectarDB();
+$id = $_GET['id'];
 
 initProcess($id, $db);
 
 function initProcess($id, $db)
 {
+    // Inicializar el array para almacenar datos
     $data = [];
 
+    // Consulta para obtener los números pendientes de procesar
     $proccessIniciated = $db->query(
         "SELECT numero, id 
         FROM `rel_registro_numeros`
@@ -21,60 +22,77 @@ function initProcess($id, $db)
         LIMIT 1"
     );
 
-    while ($row = $proccessIniciated->fetch_assoc()) {
-        $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '1' WHERE `id` = '$row[id]'");
-        array_push($data, $row);
+    // Verifica si la consulta fue exitosa
+    if (!$proccessIniciated) {
+        die('Error en la consulta SQL: ' . $db->error);
     }
 
-    for ($i = 0; $i < count($data); $i++) {
-        $row = $data[$i];
+    // Almacenar resultados y marcar registros como bloqueados
+    while ($row = $proccessIniciated->fetch_assoc()) {
+        $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '1' WHERE `id` = '" . $row['id'] . "'");
+        $data[] = $row;
+    }
 
-        // Nombre del script de Python
-        $script = 'web_interaction.py';
-        $numero = urlencode($row['numero']);
+    echo "Numeros pendientes de procesar: " . count($data);
 
-        echo $numero;
+    // Procesar cada número en el array de resultados
+    foreach ($data as $row) {
+        // Comprobar si el numero ya existe en la db
+        $exists = $db->query("SELECT operador FROM `rel_registro_numeros` WHERE `numero` = '" . $db->real_escape_string($row['numero']) . "' AND `operador` != 'SIN PROCESAR'");
+        $procesed = false;
 
-        // Comando para ejecutar el script Python
-        $command = escapeshellcmd("python $script $numero");
+        while ($existsRow = $exists->fetch_assoc()) {
+            $operator = $existsRow['operador'];
+            $procesed = true;
 
-        // Ejecutar el comando y capturar la salida
-        $output = shell_exec($command);
-
-        echo '<pre>' . $output . '</pre>';
-
-        $operatorReceibed = '';
-
-        $output = mb_convert_encoding($output, 'UTF-8', 'auto'); // Asegurarse de que la cadena esté en UTF-8
-        preg_match('/OPERATOR:\s*(.+)/u', $output, $matches);
-
-        if (!empty($matches)) {
-            $operator = trim($matches[1]);
-            $operatorReceibed = $operator;
+            $db->query("UPDATE `rel_registro_numeros` SET `operador` = '" . $operator . "', `bloqueado` = '0' WHERE `id` = '" . $row['id'] . "'");
         }
 
-        if ($operatorReceibed !== '') {
+        // Si ya fue procesado, continuar al siguiente
+        if ($procesed) {
+            continue;
+        }
 
-            if($operatorReceibed === 'TELEF?NICA M?VILES ESPA?A, S.A. UNIPERSONAL'){
-                $operatorReceibed = 'TELEFÓNICA MÓVILES ESPAÑA, S.A. UNIPERSONAL';
-            }
+        // Configuración de la URL y los parámetros
+        $flask_url = "http://149.50.141.80/run_script";
+        $numero = $row['numero'];
+        $url_con_parametros = $flask_url . "?numero=" . urlencode($numero);
 
-            if($operatorReceibed === 'VODAFONE ESPA?A, S.A. UNIPERSONAL'){
-                $operatorReceibed = 'VODAFONE ESPAÑA, S.A. UNIPERSONAL';
-            }
+        // Configurar y ejecutar la solicitud cURL
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url_con_parametros);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-            if($operatorReceibed === 'XFERA M?VILES, S.A. UNIPERSONAL'){
-                $operatorReceibed = 'XFERA MÓVILES, S.A. UNIPERSONAL';
-            }
+        $response = curl_exec($ch);
 
-            echo $operatorReceibed;
+        // Manejo de errores en la solicitud cURL
+        if (curl_errno($ch)) {
+            echo 'Error en la solicitud cURL: ' . curl_error($ch);
+            $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '0' WHERE `id` = '" . $row['id'] . "'");
+        } else {
+            // Decodificar la respuesta JSON
+            $responseData = json_decode($response, true);
 
-            $updateQuery = "UPDATE `rel_registro_numeros` SET `operador` = '$operatorReceibed', `bloqueado` = '0' WHERE `id` = '$row[id]'";
-
-            if ($db->query($updateQuery) === false) {
-                echo 'Error en la actualización SQL: ' . $db->error;
+            // Verificar si la respuesta contiene 'operator'
+            if (isset($responseData['operator'])) {
+                echo 'Respuesta recibida: ' . $responseData['operator'];
+                $operatorReceibed = $db->real_escape_string($responseData['operator']);
+                $updateQuery = "UPDATE `rel_registro_numeros` SET `operador` = '$operatorReceibed', `bloqueado` = '0' WHERE `id` = '" . $row['id'] . "'";
+                if ($db->query($updateQuery) === false) {
+                    echo 'Error en la actualización SQL: ' . $db->error;
+                } else {
+                    echo "Operador actualizado: " . $operatorReceibed;
+                }
+            } else {
+                // Si no hay operador, desbloquear el registro
+                $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '0' WHERE `id` = '" . $row['id'] . "'");
+                echo 'No se recibió el operador en la respuesta';
             }
         }
-        return;
+
+        // Cerrar la conexión cURL
+        curl_close($ch);
     }
 }

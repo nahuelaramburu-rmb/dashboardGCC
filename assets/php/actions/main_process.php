@@ -1,7 +1,7 @@
 <?php
 require_once '../config/database.php';
 include '../funciones.php';
-// include './init_process.php';
+include './init_process.php';
 // include './new_init_process.php';
 
 $db = conectarDB();
@@ -22,13 +22,10 @@ if ($torRunning) {
             echo $row['id'];
             $id = $row['id'];
 
-            // initProcess($id, $db);
-
             // $command = "php ./run_process.php $id > /dev/null &";
             // popen($command, 'r');
 
-            $command = 'php init_process.php ' . escapeshellarg($id);
-            pclose(popen($command . ' > NUL 2>&1 &', 'r'));
+            initProcess($id, $db);
 
             $db->query("UPDATE `rel_registro_numeros` SET `bloqueado` = '0' WHERE `id_relacional` = '$id'");
         } else {
